@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import User
+from rest_framework.generics import CreateAPIView
+from .serializers import RegisterCreateSerializer
 
 
 class RegisterUsernameCountAPIView(APIView):
@@ -37,3 +39,23 @@ class RegisterPhoneCountAPIView(APIView):
         }
 
         return Response(context)
+
+
+# class RegisterCreateView(CreateAPIView):
+class RegisterCreateView(APIView):
+    """
+    用户注册
+    POST /users/
+
+    用户注册我们需要对数据进行校验,同时需要数据入库
+    """
+
+    # serializer_class = RegisterCreateSerializer
+    def post(self, request):
+
+        data = request.data
+        print(data)
+        serializer = RegisterCreateSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

@@ -65,15 +65,16 @@ class RegisterSMSCodeView(GenericAPIView):
         # redis
         redis_conn = get_redis_connection('code')
         # 判断该用户是否频繁获取
-        if redis_conn.get('sms_flag_%s'%mobile):
+        if redis_conn.get('sms_flag_%s' % mobile):
             return Response(status=status.HTTP_429_TOO_MANY_REQUESTS)
         # 生成短信验证码
-        sms_code = '%06d'%randint(0,999999)
+        sms_code = '%06d'%randint(0, 999999)
+        print('sms_code:%s' % sms_code)
         # redis增加记录
-        redis_conn.setex('sms_%s'%mobile,5*60,sms_code)
-        redis_conn.setex('sms_flag_%s'%mobile,60,1)
+        redis_conn.setex('sms_%s' % mobile, 5*60, sms_code)
+        redis_conn.setex('sms_flag_%s' % mobile, 60, 1)
         # 发送短信
-        ccp = CCP()
-        ccp.send_template_sms(mobile,[sms_code,5],1)
+        # ccp = CCP()
+        # ccp.send_template_sms(mobile, [sms_code, 5], 1)
         # 返回响应
-        return Response({'message':'ok'})
+        return Response({'message': 'ok'})
