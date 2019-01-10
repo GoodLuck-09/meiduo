@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
+#项目网址: https://gitee.com/itcastitheima/meiduo_34.git
+
+
 import os
-import sys
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,15 +23,33 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '$rbncaugmm6&m64y4nh@!r4!oqn-v*mydv2ajsrwu!h-2&r5jh'
-sys.path.insert(0,os.path.join(BASE_DIR,'apps'))
+SECRET_KEY = '&u^ia_u!0k^(j9ud89d3#w*9^*ka%-))35c!*&^p(-t+^b0hl*'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
+# 白名单 允许谁跨域请求
+# CORS
+CORS_ORIGIN_WHITELIST = (
+    '127.0.0.1:8080',
+    'localhost:8080',
+    'www.meiduo.site:8080'
+)
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
+#允许哪些主机访问
+ALLOWED_HOSTS = ['127.0.0.1','api.meiduo.site']
 
 
 # Application definition
+
+#告知系统去哪里找子应用
+import sys
+# sys.path 是一个列表
+sys.path.insert(0,os.path.join(BASE_DIR,'apps'))
+# 因为我们告知了系统 去 apps中查找子应用
+# 所以以后我们使用 子应用的时候 直接使用 子应用名就可以
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,10 +60,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UsersConfig',
     'rest_framework',
-
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+
+    # 请求允许跨域 以上 必须在最上层
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,7 +101,6 @@ WSGI_APPLICATION = 'mall.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -87,6 +111,51 @@ DATABASES = {
         'NAME': 'meiduo'  # 数据库名字
     }
 }
+
+
+# Password validation
+# https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+
+# Internationalization
+# https://docs.djangoproject.com/en/1.11/topics/i18n/
+
+# LANGUAGE_CODE = 'en-us'
+#
+# TIME_ZONE = 'UTC'
+
+LANGUAGE_CODE = 'zh-Hans'
+
+
+TIME_ZONE = 'Asia/Shanghai'
+
+
+USE_I18N = True
+
+USE_L10N = True
+
+USE_TZ = True
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.11/howto/static-files/
+
+STATIC_URL = '/static/'
 
 
 CACHES = {
@@ -114,25 +183,6 @@ CACHES = {
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
-
-
-# Password validation
-# https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
 
 
 LOGGING = {
@@ -175,35 +225,34 @@ LOGGING = {
     }
 }
 
-
 REST_FRAMEWORK = {
     # 异常处理
     'EXCEPTION_HANDLER': 'utils.exceptions.exception_handler',
+
+    # 认证方式
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',  # 优先采用JWT认证
+        'rest_framework.authentication.SessionAuthentication',           # 如果没有jwt则采用 sessison认证
+        # 'rest_framework.authentication.BasicAuthentication',
+    ),
+
+}
+
+# 1.我们想要替换系统的User需要通过设置 AUTH_USER_MODEL来实现
+# 2. 子应用.模型类名  只能有一个点(.)
+AUTH_USER_MODEL = 'users.User'
+
+import datetime
+#设置JWT
+JWT_AUTH = {
+
+    'JWT_RESPONSE_PAYLOAD_HANDLER':
+    'utils.users.jwt_response_payload_handler',
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
 }
 
 
-AUTH_USER_MODEL = 'users.User'
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/1.11/topics/i18n/
-
-# LANGUAGE_CODE = 'en-us'
-#
-# TIME_ZONE = 'UTC'
-#
-# USE_I18N = True
-#
-# USE_L10N = True
-#
-# USE_TZ = True
-
-LANGUAGE_CODE = 'zh-Hans'
-
-
-TIME_ZONE = 'Asia/Shanghai'
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
-
-STATIC_URL = '/static/'
+#修改默认认证后端
+AUTHENTICATION_BACKENDS = [
+    'utils.users.UsernameMobleModelBackend',
+]

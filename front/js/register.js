@@ -1,6 +1,7 @@
 var vm = new Vue({
 	el: '#app',
 	data: {
+		host,
 		error_name: false,
 		error_password: false,
 		error_check_password: false,
@@ -17,10 +18,9 @@ var vm = new Vue({
 		sms_code: '',
 		allow: false,
 		error_name_message: '请输入5-20个字符的用户',
-		error_phone_message: '您输入的手机号格式不正确',
-		image_code_id: '',  // 图片验证码编号
+		 image_code_id: '',  // 图片验证码编号
     	image_code_url: '',  // 验证码图片路径
-		sending_flag: false,
+		 sending_flag: false,
 		sms_code_tip: '获取短信验证码',
 		error_image_code_message: '请填写图片验证码',
 		error_sms_code_message: '请填写短信验证码',
@@ -98,25 +98,8 @@ var vm = new Vue({
 			if(re.test(this.mobile)) {
 				this.error_phone = false;
 			} else {
-				this.error_phone_message = '您输入的手机号格式不正确';
 				this.error_phone = true;
 			}
-			if (this.error_phone == false) {
-                axios.get('http://127.0.0.1:8000'+'/users/phones/'+ this.mobile + '/count/', {
-                        responseType: 'json'
-                    })
-                    .then(response => {
-                        if (response.data.count > 0) {
-                            this.error_phone_message = '手机号已存在';
-                            this.error_phone = true;
-                        } else {
-                            this.error_phone = false;
-                        }
-                    })
-                    .catch(error => {
-                        console.log(error.response.data);
-                    })
-            }
 		},
 		check_image_code: function (){
 			if(!this.image_code) {
@@ -155,7 +138,7 @@ var vm = new Vue({
 
 			if(this.error_name == false && this.error_password == false && this.error_check_password == false
                 && this.error_phone == false && this.error_sms_code == false && this.error_allow == false) {
-                axios.post('http://127.0.0.1:8000'+'/users/', {
+                axios.post(this.host+'/users/', {
                         username: this.username,
                         password: this.password,
                         password2: this.password2,
@@ -171,7 +154,7 @@ var vm = new Vue({
                         localStorage.username = response.data.username;
                         localStorage.user_id = response.data.id;
 
-                        location.href = '/index.html';
+                        // location.href = '/index.html';
                     })
                     .catch(error=> {
                         if (error.response.status == 400) {

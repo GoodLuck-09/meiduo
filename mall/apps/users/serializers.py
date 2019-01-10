@@ -1,20 +1,40 @@
 import re
-from django_redis import get_redis_connection
+
 from rest_framework import serializers
-from .models import User
+from users.models import User
+from django_redis import get_redis_connection
 
 
-class RegisterCreateSerializer(serializers.ModelSerializer):
+# serializers.ModelSerializer
+# serializers.Serializer
 
-    #用户再进行提交的时候有3个数据:校验密码,短信验证码,是否同意协议
-    #所以,我们需要定义三个字段
-    password2 = serializers.CharField(label='校验密码',allow_null=False,allow_blank=False,write_only=True)
-    sms_code = serializers.CharField(label='短信验证码',max_length=6,min_length=6,allow_null=False,allow_blank=False,write_only=True)
-    allow = serializers.CharField(label='是否同意协议',allow_null=False,allow_blank=False,write_only=True)
 
+class RegiserUserSerializer(serializers.ModelSerializer):
+    """
+    手机号,用户名,密码,短信验证码,确认密码,是否同意协议
+    """
+
+    # 自己定字段就可以了
+    """
+    write_only: 只是在 反序列化(将JSON转换为模型)的时候 使用 , 在序列化(将对象转换为字典,JSON)的时候不使用该字段
+    read_only: 在序列化(将对象转换为字典,JSON)的时候,
+
+    """
+    sms_code=serializers.CharField(label='短信验证码',max_length=6,min_length=6,write_only=True,required=True,allow_blank=False)
+    allow=serializers.CharField(label='是否同意协议',required=True,allow_null=False,write_only=True)
+    password2=serializers.CharField(label='确认密码',required=True,allow_null=False,write_only=True)
+
+    token = serializers.CharField(label='token',read_only=True)
+    """
+    ModelSerializer 自动生成字段的过程
+    会对 fields 进行遍历, 先去 model中查看是否有相应的字段
+    如果有 则自动生成
+    如果没有 则查看当前类 是否有定义
+    """
     class Meta:
         model = User
-        fields = ('id','username','password','mobile','password2','sms_code','allow')
+        fields = ['id','token','mobile','username','password','sms_code','allow','password2']
+
         extra_kwargs = {
             'id': {'read_only': True},
             'username': {
@@ -36,60 +56,119 @@ class RegisterCreateSerializer(serializers.ModelSerializer):
             }
         }
 
-    #进行校验
-    #单个字段的校验有 手机号码,是否同意协议
 
-    #多字段校验, 密码是否一致, 短信是否一致
-    def validate_mobile(self, value):
-        if not re.match(r'1[345789]\d{9}', value):
-            raise serializers.ValidationError('手机号格式不正确')
+
+    """
+    校验数据
+    1. 字段类型
+    2. 字段选项
+    3. 单个字段
+    4. 多个字段
+
+    mobile: 符合手机号规则
+    allow: 是否同意协议
+
+    两次密码需要一致
+    短信
+
+    """
+    #单个字段
+    def validate_mobile(self,value):
+
+        if not re.match(r'1[3-9]\d{9}',value):
+            raise serializers.ValidationError('手机号不符合规则')
+
         return value
 
-    def validate_allow(self, value):
-        # 注意,前段提交的是否同意,我们已经转换为字符串
+    def validate_allow(self,value):
+
         if value != 'true':
-            raise serializers.ValidationError('您未同意协议')
+            raise serializers.ValidationError('没有同意协议')
+
         return value
 
-        # 多字段校验, 密码是否一致, 短信是否一致
+
+    #多个字段
     def validate(self, attrs):
 
-        # 比较密码
+        #1两次密码需要一致
         password = attrs['password']
         password2 = attrs['password2']
 
-        if password != password2:
+        if password!=password2:
             raise serializers.ValidationError('密码不一致')
-        # 比较手机验证码
-        # 获取用户提交的验证码
-        code = attrs['sms_code']
-        # 获取redis中的验证码
+
+        #2短信
+        # 2.1 获取用户提交的
+        mobile = attrs.get('mobile')
+        sms_code = attrs['sms_code']
+        # 2.2 获取 redis
         redis_conn = get_redis_connection('code')
-        # 获取手机号码
-        mobile = attrs['mobile']
-        redis_code = redis_conn.get('sms_%s' % mobile)
+
+        redis_code = redis_conn.get('sms_'+mobile)
+
         if redis_code is None:
-            raise serializers.ValidationError('验证码过期')
+            raise serializers.ValidationError('短信验证码已过期')
 
-        redis_conn.delete("sms_" + mobile)
+        # 最好删除短信
+        redis_conn.delete('sms_'+mobile)
+        #2.3 比对
+        if redis_code.decode() != sms_code:
+            raise serializers.ValidationError('验证码不一致')
 
-        if redis_code.decode() != code:
-            raise serializers.ValidationError('验证码不正确')
 
         return attrs
 
-    def create(self, validated_data):
 
-        # 删除多余字段
-        del validated_data['password2']
+    def create(self, validated_data):
+        # print(validated_data)
+
         del validated_data['sms_code']
         del validated_data['allow']
+        del validated_data['password2']
 
+        #1. 自己把数据入库
+        # user = User.objects.create(**validated_data)
+
+        #2. 现在的数据 满足要求了 ,可以让父类去执行
         user = super().create(validated_data)
 
-        # 修改密码
+        #3. 密码还是明文
+        # 我们需要加密
         user.set_password(validated_data['password'])
         user.save()
 
+        # 用户入库之后,我们生成token
+        from rest_framework_jwt.settings import api_settings
+
+        #4.1 需要使用 jwt的2个方法
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler=api_settings.JWT_ENCODE_HANDLER
+
+        #4.2 让payload(载荷 )盛放一些用户信息
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
+
+        user.token=token
+
         return user
+
+
+class Person(object):
+    name='itcast'
+
+
+
+# p = Person()
+# p.name
+#
+# p.age = 12
+# print(p.age)
+#
+# p2 = Person()
+# print(p2.age)
+
+
+
+
 

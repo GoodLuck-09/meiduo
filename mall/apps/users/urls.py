@@ -1,11 +1,20 @@
 from django.conf.urls import url
 from . import views
+from rest_framework_jwt.views import obtain_jwt_token
 
 urlpatterns = [
     #/users/usernames/(?P<username>\w{5,20})/count/
-    url(r'^usernames/(?P<username>\w{5,20})/count/$', views.RegisterUsernameCountAPIView.as_view(), name='usernamecount'),
-    url(r'^phones/(?P<mobile>1[345789]\d{9})/count/$', views.RegisterPhoneCountAPIView.as_view(), name='phonecount'),
-    url(r'^$', views.RegisterCreateView.as_view(), name='create'),
+    url(r'^usernames/(?P<username>\w{5,20})/count/$',views.RegisterUsernameAPIView.as_view(),name='usernamecount'),
 
+    url(r'^$',views.RegiserUserAPIView.as_view()),
 
+    #实现登陆
+    url(r'^auths/',obtain_jwt_token),
+    # jwt 把用户名和密码给系统,让系统进行认证,认证成功之后jwt 生成token
 ]
+
+"""
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.
+eyJ1c2VybmFtZSI6Iml0Y2FzdCIsImV4cCI6MTU0NzAwMDQxNCwiZW1haWwiOiIiLCJ1c2VyX2lkIjo4fQ.
+HVw9FkI7gXxobEtMWJ9t4QXsBbV54l4rA5ehddwqnZ4
+"""
