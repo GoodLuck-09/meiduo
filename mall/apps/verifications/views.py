@@ -101,17 +101,13 @@ class RegisterSmscodeAPIView(APIView):
         # 5.使用云通讯发送短信
         # CCP().send_template_sms(mobile,[sms_code,5],1)
 
-        from clery_tasks.sms.tasks import send_sms_code
+        # from clery_tasks.sms.tasks import send_sms_code
         # delay 的参数和 任务的参数对应
         # 必须调用 delay 方法
-        # send_sms_code.delay(mobile,sms_code)
+        # send_sms_code.delay(mobile, sms_code)
 
         # 6.返回相应
         return Response({'msg':'ok'})
 
-        """
-        写信
-        投递到邮箱
 
-        """
 

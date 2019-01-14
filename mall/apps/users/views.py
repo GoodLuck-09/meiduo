@@ -8,7 +8,7 @@ from rest_framework.response import Response
 # from users.models import User
 # 正确
 from users.models import User
-from users.serialziers import RegiserUserSerializer
+from users.serializers import RegiserUserSerializer
 
 """
 1.分析需求 (到底要干什么)

@@ -31,15 +31,46 @@ DEBUG = True
 
 # 白名单 允许谁跨域请求
 # CORS
-CORS_ORIGIN_WHITELIST = (
-    '127.0.0.1:8080',
-    'localhost:8080',
-    'www.meiduo.site:8080'
-)
-CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+# CORS_ORIGIN_WHITELIST = (
+#     '127.0.0.1:8080',
+#     'localhost:8080',
+#     'www.meiduo.site:8080'
+# ）
+#  '127.0.0.1:51184'
 
-#允许哪些主机访问
-ALLOWED_HOSTS = ['127.0.0.1','api.meiduo.site']
+# CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
+# 跨域问题解决
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    '*'
+)
+
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+
+)
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -61,6 +92,8 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'rest_framework',
     'corsheaders',
+    'oauth.apps.OauthConfig',
+
 ]
 
 MIDDLEWARE = [

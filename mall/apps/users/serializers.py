@@ -9,7 +9,7 @@ from django_redis import get_redis_connection
 # serializers.Serializer
 
 
-class RegiserUserSerializer(serializers.ModelSerializer):
+class  RegiserUserSerializer(serializers.ModelSerializer):
     """
     手机号,用户名,密码,短信验证码,确认密码,是否同意协议
     """
