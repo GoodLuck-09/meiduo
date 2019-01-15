@@ -1,8 +1,12 @@
+from rest_framework import status
 from rest_framework.response import Response
 from users.models import User
 from users.serializers import RegiserUserSerializer, UserCenterInfoSerializer, UserEmailInfoSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+
+from users.utils import check_token
+
 
 class RegisterUsernameAPIView(APIView):
 
@@ -99,6 +103,25 @@ class UserEmailInfoAPIView(APIView):
 
         serializer.save()
         return Response(serializer.data)
+
+
+class UserVerifyEmailAPIView(APIView):
+    def get(self, request):
+        data = request.query_params
+        token = data.get('token')
+        if token is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # 解析token
+
+        user_id =  check_token(token)
+        user = User.objects.get(pk=user_id)
+
+        user.email_active = True
+        user.save()
+
+        return Response({"msg":'ok'})
+
 
 
 
