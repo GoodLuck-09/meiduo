@@ -3,10 +3,11 @@ import re
 from rest_framework import serializers
 from users.models import User
 from django_redis import get_redis_connection
-
+from mall import settings
 
 # serializers.ModelSerializer
 # serializers.Serializer
+from users.utils import generic_verify_url
 
 
 class  RegiserUserSerializer(serializers.ModelSerializer):
@@ -170,6 +171,28 @@ class UserEmailInfoSerializer(serializers.ModelSerializer):
                 'required': True
             }
         }
+
+    def update(self, instance, validated_data):
+        email = validated_data.get('email')
+        instance.email = email
+        instance.save()
+
+        from django.core.mail import send_mail
+        # subject, message, from_email, recipient_list,
+        # fail_silently = False, auth_user = None, auth_password = None,
+        # connection = None, html_message = None
+        subject = '美多商城激活邮件'
+        verify_url = generic_verify_url(instance.id)
+
+        message = ''
+        from_email = settings.EMAIL_FROM
+        recipient_list = [email]
+        html_message = '<p>尊敬的用户您好！</p>' \
+                       '<p>感谢您使用美多商城。</p>' \
+                       '<p>您的邮箱为：%s 。请点击此链接激活您的邮箱：</p>' \
+                       '<p><a href="%s">%s<a></p>' % (email, verify_url, verify_url)
+        send_mail()
+        return instance
 
 
 
