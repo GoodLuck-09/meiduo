@@ -36,7 +36,7 @@ app.config_from_object('clery_tasks.config')
 #4. 让celery自动检测任务
 #  参数: 列表
 # 元素: 任务的包路径
-app.autodiscover_tasks(['clery_tasks.sms'])
+app.autodiscover_tasks(['clery_tasks.sms', 'clery_tasks.mail'])
 
 
 #5. 让worker 去执行任务

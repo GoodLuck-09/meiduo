@@ -176,22 +176,18 @@ class UserEmailInfoSerializer(serializers.ModelSerializer):
         email = validated_data.get('email')
         instance.email = email
         instance.save()
-
-        from django.core.mail import send_mail
-        # subject, message, from_email, recipient_list,
-        # fail_silently = False, auth_user = None, auth_password = None,
-        # connection = None, html_message = None
-        subject = '美多商城激活邮件'
         verify_url = generic_verify_url(instance.id)
-
         message = ''
+        subject = '美多商城邮件通知'
         from_email = settings.EMAIL_FROM
         recipient_list = [email]
         html_message = '<p>尊敬的用户您好！</p>' \
                        '<p>感谢您使用美多商城。</p>' \
                        '<p>您的邮箱为：%s 。请点击此链接激活您的邮箱：</p>' \
                        '<p><a href="%s">%s<a></p>' % (email, verify_url, verify_url)
-        send_mail()
+        from clery_tasks.mail.tasks import send_email_celery
+        send_email_celery.delay(subject, message, recipient_list, from_email, email, verify_url)
+
         return instance
 
 
