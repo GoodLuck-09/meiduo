@@ -154,19 +154,26 @@ class  RegiserUserSerializer(serializers.ModelSerializer):
         return user
 
 
-class Person(object):
-    name='itcast'
+class UserCenterInfoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'mobile', 'email', 'email_active', ]
+
+
+class UserEmailInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email')
+        extra_kwargs = {
+            'email': {
+                'required': True
+            }
+        }
 
 
 
-# p = Person()
-# p.name
-#
-# p.age = 12
-# print(p.age)
-#
-# p2 = Person()
-# print(p2.age)
+
 
 
 

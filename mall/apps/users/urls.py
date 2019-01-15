@@ -9,8 +9,11 @@ urlpatterns = [
     url(r'^$',views.RegiserUserAPIView.as_view()),
 
     #实现登陆
-    url(r'^auths/',obtain_jwt_token),
+    url(r'^auths/', obtain_jwt_token),
     # jwt 把用户名和密码给系统,让系统进行认证,认证成功之后jwt 生成token
+    url(r'^infos/$', views.UserCenterInfoAPIView.as_view(), name='userinfo'),
+    url(r'^emails/$', views.UserEmailInfoAPIView.as_view(), name='useremail'),
+
 ]
 
 """

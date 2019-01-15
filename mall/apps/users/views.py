@@ -1,42 +1,8 @@
-from django.shortcuts import render
-
-# Create your views here.
 from rest_framework.response import Response
-
-# from mall.apps.users.models import User
-# from apps.users.models import User
-# from users.models import User
-# 正确
 from users.models import User
-from users.serializers import RegiserUserSerializer
-
-"""
-1.分析需求 (到底要干什么)
-2.把需要做的事情写下来(把思路梳理清楚)
-3.路由和请求方式
-4.确定视图
-5.按照步骤实现功能
-
-
- 前端发送用户给后端 我们后端判断用户名 是否注册
-
- 请求方式:
- GET        /users/usernames/(?P<username>\w{5,20})/count/
-
- # itcast 0
- # itcast 1
-
- POST
-
-
-"""
-#APIView                        基类
-#GenericAPIVIew                 对列表视图和详情视图做了通用支持,一般和mixin配合使用
-#ListAPIVIew,RetriveAPIView     封装好了
-
-from rest_framework.generics import ListAPIView
+from users.serializers import RegiserUserSerializer, UserCenterInfoSerializer, UserEmailInfoSerializer
 from rest_framework.views import APIView
-
+from rest_framework.permissions import IsAuthenticated
 
 class RegisterUsernameAPIView(APIView):
 
@@ -109,3 +75,31 @@ class RegiserUserAPIView(APIView):
 2. token 怎么生成
 
 """
+
+
+class UserCenterInfoAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserCenterInfoSerializer(user)
+
+        return Response(serializer.data)
+
+
+class UserEmailInfoAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+
+        data = request.data
+
+        serializer = UserEmailInfoSerializer(instance=request.user, data=data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+        return Response(serializer.data)
+
+
+
+
