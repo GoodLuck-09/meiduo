@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^infos/$', views.UserCenterInfoAPIView.as_view(), name='userinfo'),
     url(r'^emails/$', views.UserEmailInfoAPIView.as_view(), name='useremail'),
     url(r'^emails/verification/$', views.UserVerifyEmailAPIView.as_view(), name='verify_mail'),
+    url(r'^addresses/$', views.UserAdddressAPIView.as_view(), name='add_user_address'),
 
 ]
 

@@ -1,10 +1,11 @@
 from rest_framework import status
 from rest_framework.response import Response
 from users.models import User
-from users.serializers import RegiserUserSerializer, UserCenterInfoSerializer, UserEmailInfoSerializer
+from users.serializers import RegiserUserSerializer, UserCenterInfoSerializer, UserEmailInfoSerializer, \
+    AddressSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.generics import CreateAPIView
 from users.utils import check_token
 
 
@@ -121,6 +122,15 @@ class UserVerifyEmailAPIView(APIView):
         user.save()
 
         return Response({"msg":'ok'})
+
+
+# 用户添加收货地址接口
+class UserAdddressAPIView(CreateAPIView):
+
+    serializer_class = AddressSerializer
+
+
+
 
 
 

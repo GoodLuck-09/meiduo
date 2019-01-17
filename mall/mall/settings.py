@@ -94,6 +94,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'oauth.apps.OauthConfig',
     'areas.apps.AreasConfig',
+    'goods.apps.GoodsConfig',
+    'contents.apps.ContentsConfig',
 ]
 
 MIDDLEWARE = [
@@ -270,6 +272,16 @@ REST_FRAMEWORK = {
     ),
 
 }
+
+
+# DRF扩展
+REST_FRAMEWORK_EXTENSIONS = {
+    # 缓存时间
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 60 * 60,
+    # 缓存存储
+    'DEFAULT_USE_CACHE': 'default',
+}
+
 
 # 1.我们想要替换系统的User需要通过设置 AUTH_USER_MODEL来实现
 # 2. 子应用.模型类名  只能有一个点(.)
