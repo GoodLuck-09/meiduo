@@ -8,3 +8,13 @@ class AreaSerializer(serializers.ModelSerializer):
         model = Area
         fields = ['id', 'name']
 
+
+class SubAreaSerializer(serializers.ModelSerializer):
+    subs = AreaSerializer(many=True)
+
+    class Meta:
+
+        model = Area
+        fields = ['subs', 'name', 'id']
+
+

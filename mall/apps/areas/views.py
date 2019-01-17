@@ -1,4 +1,4 @@
-from .serializers import AreaSerializer
+from .serializers import AreaSerializer, SubAreaSerializer
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from .models import Area
 
@@ -7,7 +7,7 @@ class AreaModelViewSet(ReadOnlyModelViewSet):
 
     # queryset = Area.objects.all()/
     # serializer_class = AreaSerializer
-    def gt_queryset(self):
+    def get_queryset(self):
         if self.action == 'list':
             return Area.objects.filter(parent=None)
 
@@ -18,7 +18,7 @@ class AreaModelViewSet(ReadOnlyModelViewSet):
         if self.action == 'list':
             return AreaSerializer
         else:
-            return AreaSerializer
+            return SubAreaSerializer
 
 
 
